@@ -1,10 +1,8 @@
 import {configureStore} from '@reduxjs/toolkit';
 import reducerList from './reducerList';
-import reducerTodo from './reducerTodo';
 const store = configureStore({
   reducer: {
     reducerList,
-    reducerTodo,
   },
 });
 export default store;

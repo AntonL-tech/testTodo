@@ -2,29 +2,38 @@ import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
-import {deleteTask, editTask} from '../../redux/reducerTodo';
-import {useAppDispatch} from '../../redux/hooks/redux';
+import {deleteTask} from '../../utils/utils';
 
 export default function TodoItem(props: any) {
-  const {item, onEditTask} = props;
-  const dispatch = useAppDispatch();
+  const {item, onEditTask, setTodos} = props;
+  //   const [color, setColor] = useState('#e9e9e9');
 
   const onDeleteItem = (id: number) => {
-    dispatch(
-      deleteTask({
-        id: id,
-      }),
-    );
+    setTodos(prevState => {
+      return deleteTask(prevState, id);
+    });
   };
+  //   const renderColor = () => {
+  //     if (item.priority === 'High') {
+  //       return setColor('red');
+  //     } else if (item.priority === 'Medium') {
+  //       return setColor('blue');
+  //     } else if (item.priority === 'Low') {
+  //       return setColor('green');
+  //     } else {
+  //       return color;
+  //     }
+  //   };
+  //   renderColor();
 
   return (
     <View style={styles.container}>
       <View style={styles.subcontainers}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.description}>{item.description}</Text>
-        <View style={styles.status}>
-          <Text>Status:{item.status}</Text>
-          <Text>Priority:{item.priority}</Text>
+        <View style={styles.status_container}>
+          <Text style={styles.status}>Status:{item.status}</Text>
+          <Text style={styles.priority}>Priority:{item.priority}</Text>
         </View>
       </View>
       <View style={styles.subcontainers}>
@@ -52,9 +61,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     minHeight: 100,
   },
-  status: {
+  status_container: {
     flexDirection: 'row',
     marginTop: 10,
+  },
+  priority: {
+    marginLeft: 10,
+    fontWeight: '500',
+    color: 'red',
+  },
+  status: {
+    fontWeight: '500',
+    color: 'blue',
   },
   title: {
     fontSize: 20,
