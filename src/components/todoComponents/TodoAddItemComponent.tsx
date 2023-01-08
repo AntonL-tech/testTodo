@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Text,
   View,
@@ -7,7 +7,10 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import uuid from 'react-native-uuid';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import DropDownPicker from 'react-native-dropdown-picker';
+import {ITodo} from '../../redux/models/ITodo';
 import {priorityValue, statusValue} from '../../utils/const';
 import {addTask, editTask} from '../../utils/utils';
 
@@ -28,12 +31,24 @@ const TodoAddItemComponent = (props: TodoInput) => {
   const [openPriority, setOpenPriority] = useState(false);
   const [openStatus, setOpenStatus] = useState(false);
 
+  useEffect(() => {
+    const jsonValue = JSON.stringify({
+      ...editedItem,
+      description,
+      title,
+      priority,
+      status,
+    });
+    AsyncStorage.setItem('editedItem', jsonValue);
+  }, [description, title, priority, status, editedItem]);
+
   const addItem = () => {
     if (title.trim().length === 0) {
       Alert.alert('You need to enter a title');
     } else if (editedItem) {
-      setTodos(prevState => {
-        return addTask(prevState, editedItem, {
+      setTodos((prevState: ITodo[]) => {
+        return editTask(prevState, editedItem, {
+          id: editedItem?.id,
           title,
           description,
           priority,
@@ -42,8 +57,9 @@ const TodoAddItemComponent = (props: TodoInput) => {
       });
       onWindowClose();
     } else {
-      setTodos(prevState => {
-        return editTask(prevState, {
+      setTodos((prevState: ITodo[]) => {
+        return addTask(prevState, {
+          id: uuid.v4(),
           title,
           description,
           priority,

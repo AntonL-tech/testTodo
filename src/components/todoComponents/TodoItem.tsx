@@ -3,28 +3,16 @@ import React from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import {deleteTask} from '../../utils/utils';
+import {ITodo} from '../../redux/models/ITodo';
 
 export default function TodoItem(props: any) {
   const {item, onEditTask, setTodos} = props;
-  //   const [color, setColor] = useState('#e9e9e9');
 
-  const onDeleteItem = (id: number) => {
-    setTodos(prevState => {
+  const onDeleteItem = (id: string) => {
+    setTodos((prevState: ITodo[]) => {
       return deleteTask(prevState, id);
     });
   };
-  //   const renderColor = () => {
-  //     if (item.priority === 'High') {
-  //       return setColor('red');
-  //     } else if (item.priority === 'Medium') {
-  //       return setColor('blue');
-  //     } else if (item.priority === 'Low') {
-  //       return setColor('green');
-  //     } else {
-  //       return color;
-  //     }
-  //   };
-  //   renderColor();
 
   return (
     <View style={styles.container}>

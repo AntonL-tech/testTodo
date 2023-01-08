@@ -1,34 +1,45 @@
 import React, {useState, useCallback, useEffect} from 'react';
-import {View, FlatList, Modal} from 'react-native';
-import {TodoAddItemComponent, TodoHeader, TodoItem} from './index';
+import {FlatList, Modal} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {TodoAddItemComponent, TodoHeader, TodoItem} from './index';
+import {getData, getStatus} from '../../utils/utils';
+import {ITodo} from '../../redux/models/ITodo';
+
+type Item = {
+  item: ITodo;
+};
 
 const TodoList = () => {
   const [todos, setTodos] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editedItem, setEditedItem] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [editedItem, setEditedItem] = useState<ITodo | null>(null);
 
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const jsonValue = await AsyncStorage.getItem('storedTodos');
-        const data = jsonValue != null ? JSON.parse(jsonValue) : null;
-        setTodos(data ? data : todos);
-      } catch (e) {
-        // error reading value
-      }
-    };
-    getData();
+    getStatus(setIsModalVisible, setEditedItem);
+    getData(todos, setTodos);
   }, []);
 
-  const onEditItem = (item: any) => {
+  const onEditItem = (item: ITodo | null) => {
     setEditedItem(item);
-    setIsModalVisible(true);
+    onWindowOpen(item);
   };
 
-  const renderItem = useCallback(({item}: any) => {
+  const onWindowOpen = (item: ITodo | null) => {
+    setIsModalVisible(true);
+    AsyncStorage.setItem('windowStatus', 'true');
+    const jsonValue = JSON.stringify(item);
+    AsyncStorage.setItem('editedItem', jsonValue);
+  };
+
+  const onWindowClose = () => {
+    setIsModalVisible(false);
+    AsyncStorage.setItem('windowStatus', 'false');
+  };
+
+  const renderItem = useCallback(({item}: Item) => {
     return (
       <TodoItem
+        key={item?.id}
         setTodos={setTodos}
         onEditTask={() => onEditItem(item)}
         item={item}
@@ -37,17 +48,19 @@ const TodoList = () => {
   }, []);
 
   return (
-    <View>
-      <TodoHeader
-        onAddTask={() => {
-          setEditedItem(null);
-          setIsModalVisible(true);
-        }}
-      />
+    <>
       <FlatList
         data={todos}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.id.toString()}
+        ListHeaderComponent={() => (
+          <TodoHeader
+            onAddTask={() => {
+              setEditedItem(null);
+              onWindowOpen(null);
+            }}
+          />
+        )}
       />
       <Modal
         animationType="fade"
@@ -56,10 +69,10 @@ const TodoList = () => {
         <TodoAddItemComponent
           setTodos={setTodos}
           editedItem={editedItem}
-          onWindowClose={() => setIsModalVisible(false)}
+          onWindowClose={onWindowClose}
         />
       </Modal>
-    </View>
+    </>
   );
 };
 
